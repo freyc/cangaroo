@@ -24,6 +24,8 @@
 #include "CanMessage.h"
 #include <core/portable_endian.h>
 
+#include <QTextStream>
+
 enum {
 	id_flag_extended = 0x80000000,
 	id_flag_rtr      = 0x40000000,
@@ -292,25 +294,22 @@ QDateTime CanMessage::getDateTime() const
 QString CanMessage::getIdString() const
 {
     if (isExtended()) {
-        return QString().sprintf("0x%08X", getId());
+        return QString("0x%1").arg(getId(), 8, 16, QChar('0')); // .sprintf("0x%08X", getId());
     } else {
-        return QString().sprintf("0x%03X", getId());
+        return QString("0x%1").arg(getId(), 3, 16, QChar('0')); // .sprintf("0x%03X", getId());
     }
 }
 
 QString CanMessage::getDataHexString() const
 {
-    switch (getLength()) {
-        case 0: return "";
-        case 1: return QString().sprintf("%02X", getByte(0));
-        case 2: return QString().sprintf("%02X %02X", getByte(0), getByte(1));
-        case 3: return QString().sprintf("%02X %02X %02X", getByte(0), getByte(1), getByte(2));
-        case 4: return QString().sprintf("%02X %02X %02X %02X", getByte(0), getByte(1), getByte(2), getByte(3));
-        case 5: return QString().sprintf("%02X %02X %02X %02X %02X", getByte(0), getByte(1), getByte(2), getByte(3), getByte(4));
-        case 6: return QString().sprintf("%02X %02X %02X %02X %02X %02X", getByte(0), getByte(1), getByte(2), getByte(3), getByte(4), getByte(5));
-        case 7: return QString().sprintf("%02X %02X %02X %02X %02X %02X %02X", getByte(0), getByte(1), getByte(2), getByte(3), getByte(4), getByte(5), getByte(6));
-        case 8: return QString().sprintf("%02X %02X %02X %02X %02X %02X %02X %02X", getByte(0), getByte(1), getByte(2), getByte(3), getByte(4), getByte(5), getByte(6), getByte(7));
-        default: return QString();
-    }
-
+	QString result;
+	QTextStream ts(&result);
+	auto dlc = getLength();
+	for(auto idx = 0; idx < dlc; idx++) {
+		ts << QString("%1").arg(static_cast<unsigned int>(getByte(idx)), 2, 16, QChar('0'));
+        if(idx < (dlc - 1)) {
+            ts << " ";
+        }
+	}
+    return result;
 }

@@ -104,7 +104,11 @@ DbcParser::error_t DbcParser::tokenize(QFile *file, DbcParser::DbcTokenList &tok
     error_t retval = err_ok;
 
     QTextStream in(file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     in.setCodec("ISO 8859-1");
+#else
+    in.setEncoding(QStringConverter::Encoding::Latin1); // .setCodec("ISO 8859-1");
+#endif
 
     while (true) {
         QString s = in.read(1);

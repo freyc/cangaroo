@@ -99,7 +99,7 @@ void GenericCanSetupPage::fillBitratesList(CanInterface *intf, unsigned selected
             bitrates.append(t.getBitrate());
         }
     }
-    qSort(bitrates);
+    std::sort(bitrates.begin(), bitrates.end());
 
     ui->cbBitrate->clear();
     foreach (uint32_t br, bitrates) {
@@ -118,7 +118,7 @@ void GenericCanSetupPage::fillSamplePointsForBitrate(CanInterface *intf, unsigne
             }
         }
     }
-    qSort(samplePoints);
+    std::sort(samplePoints.begin(), samplePoints.end());
 
     ui->cbSamplePoint->clear();
     foreach (uint32_t sp, samplePoints) {

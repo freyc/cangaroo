@@ -77,7 +77,7 @@ QVariant BaseTraceViewModel::data(const QModelIndex &index, int role) const
             return data_DisplayRole(index, role);
         case Qt::TextAlignmentRole:
             return data_TextAlignmentRole(index, role);
-        case Qt::TextColorRole:
+        case Qt::ForegroundRole:
             return data_TextColorRole(index, role);
         default:
             return QVariant();
@@ -114,7 +114,7 @@ QVariant BaseTraceViewModel::formatTimestamp(timestamp_mode_t mode, const CanMes
         if (t_last==0) {
             return QVariant();
         } else {
-            return QString().sprintf("%.04lf", t_current-t_last);
+            return QString("%1").arg(t_current - t_last, 0, 'f', 4);
         }
 
     } else if (mode==timestamp_mode_absolute) {
@@ -124,8 +124,7 @@ QVariant BaseTraceViewModel::formatTimestamp(timestamp_mode_t mode, const CanMes
     } else if (mode==timestamp_mode_relative) {
 
         double t_current = currentMsg.getFloatTimestamp();
-        return QString().sprintf("%.04lf", t_current - backend()->getTimestampAtMeasurementStart());
-
+        return QString("%1").arg(t_current - backend()->getTimestampAtMeasurementStart(), 0, 'f', 4);
     }
 
     return QVariant();
@@ -228,14 +227,14 @@ QVariant BaseTraceViewModel::data_TextAlignmentRole(const QModelIndex &index, in
 {
     (void) role;
     switch (index.column()) {
-        case column_timestamp: return Qt::AlignRight + Qt::AlignVCenter;
-        case column_channel: return Qt::AlignCenter + Qt::AlignVCenter;
-        case column_direction: return Qt::AlignCenter + Qt::AlignVCenter;
-        case column_canid: return Qt::AlignRight + Qt::AlignVCenter;
-        case column_name: return Qt::AlignLeft + Qt::AlignVCenter;
-        case column_dlc: return Qt::AlignCenter + Qt::AlignVCenter;
-        case column_data: return Qt::AlignLeft + Qt::AlignVCenter;
-        case column_comment: return Qt::AlignLeft + Qt::AlignVCenter;
+        case column_timestamp: return QVariant::fromValue(Qt::AlignRight | Qt::AlignVCenter);
+        case column_channel: return QVariant::fromValue(Qt::AlignCenter | Qt::AlignVCenter);
+        case column_direction: return QVariant::fromValue(Qt::AlignCenter | Qt::AlignVCenter);
+        case column_canid: return QVariant::fromValue(Qt::AlignRight | Qt::AlignVCenter);
+        case column_name: return QVariant::fromValue(Qt::AlignLeft | Qt::AlignVCenter);
+        case column_dlc: return QVariant::fromValue(Qt::AlignCenter | Qt::AlignVCenter);
+        case column_data: return QVariant::fromValue(Qt::AlignLeft | Qt::AlignVCenter);
+        case column_comment: return QVariant::fromValue(Qt::AlignLeft | Qt::AlignVCenter);
         default: return QVariant();
     }
 }

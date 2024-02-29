@@ -113,7 +113,7 @@ QMainWindow *MainWindow::createTab(QString title)
 {
     QMainWindow *mm = new QMainWindow(this);
     QPalette pal(palette());
-    pal.setColor(QPalette::Background, QColor(0xeb, 0xeb, 0xeb));
+    pal.setColor(QPalette::Window, QColor(0xeb, 0xeb, 0xeb));
     mm->setAutoFillBackground(true);
     mm->setPalette(pal);
     ui->mainTabs->addTab(mm, title);
@@ -433,7 +433,8 @@ void MainWindow::saveTraceToFile()
 
     QFileDialog fileDialog(0, "Save Trace to file", QDir::currentPath(), filters);
     fileDialog.setAcceptMode(QFileDialog::AcceptSave);
-    fileDialog.setConfirmOverwrite(true);
+    fileDialog.setOption(QFileDialog::DontConfirmOverwrite, false);
+    //fileDialog.setConfirmOverwrite(true);
     fileDialog.selectNameFilter(defaultFilter);
     fileDialog.setDefaultSuffix("asc");
     if (fileDialog.exec()) {

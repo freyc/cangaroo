@@ -34,7 +34,7 @@ CanTrace::CanTrace(Backend &backend, QObject *parent, int flushInterval)
   : QObject(parent),
     _backend(backend),
     _isTimerRunning(false),
-    _mutex(QMutex::Recursive),
+    _mutex(),
     _timerMutex(),
     _flushTimer(this)
 {
@@ -137,17 +137,17 @@ void CanTrace::saveCanDump(QFile &file)
     for (unsigned int i=0; i<size(); i++) {
         CanMessage *msg = &_data[i];
         QString line;
-        line.append(QString().sprintf("(%.6f) ", msg->getFloatTimestamp()));
+        line.append(QString("(%1)").arg(msg->getFloatTimestamp(), 0, 'f', 6));//  .sprintf("(%.6f) ", msg->getFloatTimestamp()));
         line.append(_backend.getInterfaceName(msg->getInterfaceId()));
         if (msg->isExtended()) {
-            line.append(QString().sprintf(" %08X#", msg->getId()));
+            line.append(QString(" %1").arg(msg->getId(), 8, 16, QChar('0'))); // .sprintf(" %08X#", msg->getId()));
         } else {
-            line.append(QString().sprintf(" %03X#", msg->getId()));
+            line.append(QString(" %1").arg(msg->getId(), 3, 16, QChar('0'))); // .sprintf(" %03X#", msg->getId()));
         }
         for (int i=0; i<msg->getLength(); i++) {
-            line.append(QString().sprintf("%02X", msg->getByte(i)));
+            line.append(QString("%1").arg(msg->getByte(i), 2, 16, QChar('0'))); // .sprintf("%02X", msg->getByte(i)));
         }
-        stream << line << endl;
+        stream << line << Qt::endl;
     }
 }
 
@@ -167,41 +167,39 @@ void CanTrace::saveVectorAsc(QFile &file)
     QLocale locale_c(QLocale::C);
     QString dt_start = locale_c.toString(firstMessage.getDateTime(), "ddd MMM dd hh:mm:ss.zzz ap yyyy");
 
-    stream << "date " << dt_start << endl;
-    stream << "base hex  timestamps absolute" << endl;
-    stream << "internal events logged" << endl;
-    stream << "// version 8.5.0" << endl;
-    stream << "Begin Triggerblock " << dt_start << endl;
-    stream << "   0.000000 Start of measurement" << endl;
+    stream << "date " << dt_start << Qt::endl;
+    stream << "base hex  timestamps absolute" << Qt::endl;
+    stream << "internal events logged" << Qt::endl;
+    stream << "// version 8.5.0" << Qt::endl;
+    stream << "Begin Triggerblock " << dt_start << Qt::endl;
+    stream << "   0.000000 Start of measurement" << Qt::endl;
 
     for (unsigned int i=0; i<size(); i++) {
         CanMessage &msg = _data[i];
 
         double t_current = msg.getFloatTimestamp();
-        QString id_hex_str = QString().sprintf("%x", msg.getId());
-        QString id_dec_str = QString().sprintf("%d", msg.getId());
+        QString id_hex_str = QString("%1").arg(msg.getId(), 0, 16); // .sprintf("%x", msg.getId());
+        QString id_dec_str = QString("%1").arg(msg.getId(), 0, 10); // .sprintf("%d", msg.getId());
         if (msg.isExtended()) {
             id_hex_str.append("x");
             id_dec_str.append("x");
         }
 
         // TODO how to handle RTR flag?
-        QString line = QString().sprintf(
-            "%11.6lf 1  %-15s %s   d %d %s  Length = %d BitCount = %d ID = %s",
-            t_current-t_start,
-            id_hex_str.toStdString().c_str(),
-            "Rx", // TODO handle Rx/Tx
-            msg.getLength(),
-            msg.getDataHexString().toStdString().c_str(),
-            0, // TODO Length (transfer time in ns)
-            0, // TODO BitCount (overall frame length, including stuff bits)
-            id_dec_str.toStdString().c_str()
-        );
+        QString line = QString("%1 1  %2 %3   d %4 %5  Length = %6 BitCount = %7 ID = %8")
+                           .arg(t_current - t_start, 11, 'f', 6)
+                           .arg(id_hex_str, -15)
+                           .arg("Rx")  // TODO handle Rx/Tx
+                           .arg(msg.getLength())
+                           .arg(msg.getDataHexString())
+                           .arg(0) // TODO Length (transfer time in ns)
+                           .arg(0) // TODO BitCount (overall frame length, including stuff bits)
+                           .arg(id_dec_str);
 
-        stream << line << endl;
+        stream << line << Qt::endl;
     }
 
-    stream << "End TriggerBlock" << endl;
+    stream << "End TriggerBlock" << Qt::endl;
 }
 
 bool CanTrace::getMuxedSignalFromCache(const CanDbSignal *signal, uint32_t *raw_value)
